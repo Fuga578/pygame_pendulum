@@ -22,6 +22,14 @@ RED = (255, 0, 0)
 BLUE = (0, 255, 0)
 GREEN = (0, 0, 255)
 
+# キー
+INPUTS = {
+    "up": False,
+    "down": False,
+    "left": False,
+    "right": False
+}
+
 # 設定
 fulcrum_point = pygame.math.Vector2(screen_width // 2, screen_height // 2)  # 支点位置
 length = 100    # 糸の長さ
@@ -37,6 +45,7 @@ player_point = pygame.math.Vector2(
     fulcrum_point.x + length * math.sin(angle),
     fulcrum_point.y + length * math.cos(angle)
 )
+swing_force = 0.002
 
 while True:
 
@@ -45,6 +54,13 @@ while True:
 
     # 振り子の演算
     if not is_cut:
+
+        # 入力による加速
+        if INPUTS["left"]:
+            angle_velocity -= swing_force
+        if INPUTS["right"]:
+            angle_velocity += swing_force
+
         angle_acceleration = -(gravity / length) * math.sin(angle)  # 角加速度の計算
         angle_velocity += angle_acceleration  # 角速度の更新
         angle_velocity *= 0.99  # 減衰効果
@@ -80,6 +96,24 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
+            if event.key == pygame.K_UP:
+                INPUTS["up"] = True
+            if event.key == pygame.K_DOWN:
+                INPUTS["down"] = True
+            if event.key == pygame.K_LEFT:
+                INPUTS["left"] = True
+            if event.key == pygame.K_RIGHT:
+                INPUTS["right"] = True
+        # キーボード解放
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP:
+                INPUTS["up"] = False
+            if event.key == pygame.K_DOWN:
+                INPUTS["down"] = False
+            if event.key == pygame.K_LEFT:
+                INPUTS["left"] = False
+            if event.key == pygame.K_RIGHT:
+                INPUTS["right"] = False
         # マウスクリック
         if event.type == pygame.MOUSEBUTTONDOWN:
             # 左クリック
