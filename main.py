@@ -59,7 +59,6 @@ hook_velocity = None
 is_shooting_hook = False
 hook_speed = 30
 
-
 while True:
     # 背景の塗りつぶし
     screen.fill(WHITE)
@@ -119,13 +118,15 @@ while True:
                 angle_velocity = 0
 
         # フックリリース
-        if not INPUTS["left_click"] and is_hook:
-            is_hook = False
-            is_pulled = False
-            release_velocity = pygame.math.Vector2(
-                angle_velocity * length * math.cos(angle),
-                -angle_velocity * length * math.sin(angle)
-            )
+        if not INPUTS["left_click"]:
+            is_shooting_hook = False
+            if is_hook:
+                is_hook = False
+                is_pulled = False
+                release_velocity = pygame.math.Vector2(
+                    angle_velocity * length * math.cos(angle),
+                    -angle_velocity * length * math.sin(angle)
+                )
 
         # 振り子の演算
         if is_hook:
