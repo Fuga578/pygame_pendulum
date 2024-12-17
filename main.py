@@ -19,8 +19,8 @@ FPS = 60
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
-BLUE = (0, 255, 0)
-GREEN = (0, 0, 255)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 
 # キー
 INPUTS = {
@@ -53,6 +53,12 @@ is_pulled = False
 pull_force = 5
 pull_velocity = pygame.math.Vector2()
 pull_distance = None
+
+hook_position = None
+hook_velocity = None
+is_shooting_hook = False
+hook_speed = 30
+
 
 while True:
     # 背景の塗りつぶし
@@ -91,14 +97,26 @@ while True:
 
         # フック処理
         if INPUTS["left_click"] and not is_hook:
-            is_hook = True
-            on_ground = False
-            mx, my = pygame.mouse.get_pos()
-            fulcrum_point = pygame.math.Vector2(mx, my)  # 支点位置
-            length = math.sqrt((mx - player_point.x) ** 2 + (my - player_point.y) ** 2)  # 糸の長さ
-            length += 0.00001
-            angle = math.atan2(player_point.x - mx, player_point.y - my)  # ※座標系が異なる（原点が左上）であるため、角度計算を一部専用に修正
-            angle_velocity = 0  # 角速度
+
+            if not is_shooting_hook:
+                is_shooting_hook = True
+                hook_position = player_point.copy()
+                mx, my = pygame.mouse.get_pos()
+                direction = (pygame.math.Vector2(mx, my) - player_point).normalize()
+                hook_velocity = direction * hook_speed
+
+            hook_position += hook_velocity
+            pygame.draw.line(screen, BLACK, player_point, hook_position, 3)
+            pygame.draw.circle(screen, BLUE, (int(hook_position.x), int(hook_position.y)), 5)
+
+            if hook_position.y <= 50:
+                is_hook = True
+                is_shooting_hook = False
+                on_ground = False
+                fulcrum_point = hook_position.copy()
+                length = math.sqrt((fulcrum_point.x - player_point.x) ** 2 + (fulcrum_point.y - player_point.y) ** 2)
+                angle = math.atan2(player_point.x - fulcrum_point.x, player_point.y - fulcrum_point.y)
+                angle_velocity = 0
 
         # フックリリース
         if not INPUTS["left_click"] and is_hook:
@@ -112,7 +130,7 @@ while True:
         # 振り子の演算
         if is_hook:
             # 支点の描画
-            pygame.draw.circle(screen, GREEN, (fulcrum_point.x, fulcrum_point.y), 10)
+            pygame.draw.circle(screen, BLUE, (fulcrum_point.x, fulcrum_point.y), 10)
 
             # 糸の描画
             pygame.draw.line(screen, BLACK, (fulcrum_point.x, fulcrum_point.y), (player_point.x, player_point.y), 3)
